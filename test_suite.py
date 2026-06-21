@@ -11,6 +11,7 @@ from Pruebas.PruebasIndependencia import (
 from Generadores.Demanda import GeneradorDemanda
 from Generadores.DiasDemora import GeneradorDemora
 from datos import cargar_parametros
+from simulacion_ideal import simular_ideal
 
 
 class TestSimulacionInventario(unittest.TestCase):
@@ -64,6 +65,28 @@ class TestSimulacionInventario(unittest.TestCase):
         self.assertIn("df_diario", params)
         self.assertIn("df_pedidos", params)
 
+    def test_simulacion_ideal(self):
+        params = cargar_parametros()
+        res = simular_ideal(
+            params=params,
+            CEP=100.0,
+            CVP=250.0,
+            CALM=2.0,
+            TF=70,
+            SR=5,
+            MAX_CAP=10,
+            ST_0=7,
+            verbose=False
+        )
+        self.assertIn("CTF", res)
+        self.assertIn("CTALM", res)
+        self.assertIn("CVTAP", res)
+        self.assertIn("CTEP", res)
+        self.assertIn("VTAP", res)
+        self.assertIn("NROP", res)
+        self.assertEqual(len(res["historial"]), 71)
+
 
 if __name__ == "__main__":
     unittest.main()
+

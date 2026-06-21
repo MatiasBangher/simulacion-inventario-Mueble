@@ -38,10 +38,12 @@ simulacion-inventario-Mueble/
 ├── Tablas - Mueble-Camilo.csv    # Datos históricos reales registrados
 │
 ├── datos.py                      # Módulo de carga de parámetros y CSVs (Pandas)
-├── simulacion_actual.py          # Lógica principal del bucle de simulación
-├── main.py                       # Punto de entrada y configuraciones del modelo
+├── simulacion_actual.py          # Lógica de simulación de la situación actual (a ojo)
+├── simulacion_ideal.py           # Lógica de simulación del modelo ideal (revisión continua)
+├── main.py                       # Punto de entrada, optimización de SR y comparativa
 ├── test_suite.py                 # Suite de pruebas unitarias
 └── README.md                     # Documentación general del proyecto
+
 ```
 
 ---
@@ -94,11 +96,11 @@ python test_suite.py
 En la parte superior de `main.py` puedes modificar los siguientes parámetros para alterar el escenario o costos del modelo:
 
 ```python
-# Costos
-CEP     = 0.0      # Costo de emisión por pedido ($/pedido)
-CVP     = 0.0      # Costo de venta perdida ($/unidad)
-CALM    = 0.0      # Costo de almacenamiento regular ($/unidad·día)
-CSOB    = 0.0      # Costo de almacenamiento sobrante ($/unidad·día)
+# Costos (en $)
+CEP     = 100.0    # Costo de emisión por pedido ($/pedido)
+CVP     = 250.0    # Costo de venta perdida ($/unidad)
+CALM    = 2.0      # Costo de almacenamiento regular ($/unidad·día)
+CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día) (Solo Modelo Actual)
 
 # Simulación
 TF      = 70       # Tiempo final de simulación (días hábiles)
@@ -106,3 +108,18 @@ SMR     = 10       # Stock Medio de Referencia (punto de reorden)
 MAX_CAP = 10       # Capacidad máxima del depósito
 ST_0    = 7        # Stock inicial
 ```
+
+---
+
+## 📈 Comparativa de Modelos: Actual vs. Ideal
+
+Al ejecutar la simulación, `main.py` corre de forma secuencial:
+1. **Situación Actual**: Bucle semanal (revisión los lunes) con un pedido "a ojo" entre $1$ y $(SMR - ST)$.
+2. **Modelo Ideal**: Bucle diario (revisión continua) con reorden cuando $ST < SR$. Si se cumple la condición y no hay pedidos pendientes (`PE == 0`), se ordena una cantidad exacta de $TP = MAX\_CAP - ST$.
+
+### Optimización del Punto de Reorden (SR)
+El punto de entrada realiza un barrido automático de $SR$ entre $0$ y $MAX\_CAP - 1$. Esto permite analizar cuantitativamente la compensación financiera típica de la gestión de stock:
+* **SR muy bajo**: Reduce los costos de almacenamiento pero incrementa gravemente el costo de ventas perdidas.
+* **SR muy alto**: Evita quiebres de stock pero incrementa exponencialmente los costos de almacenamiento.
+* **SR Óptimo**: Aquel valor que minimiza la suma total de los costos de funcionamiento (`CTF`).
+
