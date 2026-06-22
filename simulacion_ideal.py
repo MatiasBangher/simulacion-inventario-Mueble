@@ -13,6 +13,7 @@ def simular_ideal(
     MAX_CAP: int   = 10,    # Capacidad máxima (S)
     ST_0:    int   = 7,
     verbose: bool  = True,
+    gen_compartido = None,
 ) -> dict:
     """
     Simula la política IDEAL de gestión de inventario (Revisión Continua Q,R).
@@ -30,9 +31,14 @@ def simular_ideal(
     pr  = params["params_rechazo"]
     pu  = params["params_uniforme"]
 
-    gen         = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
+    if gen_compartido is not None:
+        gen = gen_compartido
+    else:
+        gen = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
+
     gen_demanda = GeneradorDemanda(gen, pr["lam"], pr["a_rej"], pr["b_rej"], pr["m_rej"])
     gen_demora  = GeneradorDemora(gen, pu["DE_MIN"], pu["DE_MAX"])
+
 
     # ── Estado inicial ────────────────────────────────────────────────────────
     T       = -1

@@ -14,6 +14,7 @@ def simular_actual(
     MAX_CAP: int   = 10,
     ST_0:    int   = 7,
     verbose: bool  = True,
+    gen_compartido = None,
 ) -> dict:
     """
     Simula la política ACTUAL de gestión de inventario del Mueble Camilo.
@@ -32,9 +33,14 @@ def simular_actual(
     pr  = params["params_rechazo"]
     pu  = params["params_uniforme"]
 
-    gen         = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
+    if gen_compartido is not None:
+        gen = gen_compartido
+    else:
+        gen = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
+
     gen_demanda = GeneradorDemanda(gen, pr["lam"], pr["a_rej"], pr["b_rej"], pr["m_rej"])
     gen_demora  = GeneradorDemora(gen, pu["DE_MIN"], pu["DE_MAX"])
+
 
     # ── Estado inicial ────────────────────────────────────────────────────────
     T       = -1
@@ -76,8 +82,15 @@ def simular_actual(
 
         # [2] Recepciones del día
         llegadas = [k for k, d in FLL.items() if T == d]
+        SOB = 0
         for k in llegadas:
-            ST += TP_lst.pop(k)
+            cant_recibida = TP_lst.pop(k)
+            if ST + cant_recibida > MAX_CAP:
+                unidades_sobrantes = (ST + cant_recibida) - MAX_CAP
+                SOB += unidades_sobrantes
+                ST = MAX_CAP
+            else:
+                ST += cant_recibida
             FLL.pop(k)
 
         # [3] Demanda del día (método de rechazo)
@@ -85,14 +98,9 @@ def simular_actual(
 
         # [4] Atender demanda
         vtap_dia = 0
-        SOB      = 0
         if ST >= VD:
             ST -= VD
-            if ST > MAX_CAP:
-                SOB    = ST - MAX_CAP
-                CTALM += SOB * CALM
-            else:
-                CTALM += ST * CALM
+            CTALM += ST * CALM
         else:
             vtap_dia = VD - ST
             VTAP    += vtap_dia
@@ -100,6 +108,7 @@ def simular_actual(
             ST       = 0
 
         # [5] Costo sobrantes
+
         CALMSOB += SOB * CSOB
 
         # [6] ¿Es lunes? → revisar y emitir pedido "a ojo"
