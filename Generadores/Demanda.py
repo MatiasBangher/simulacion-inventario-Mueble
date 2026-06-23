@@ -31,8 +31,9 @@ class GeneradorDemanda:
             r2 = self.gen.siguiente()
             self.intentos += 1
 
-            x = self.a + (self.b - self.a) * r1
-            xi = round(x)
+            # Fórmula correcta para propuesta uniforme discreta en {a, ..., b}:
+            # Cada valor 0,1,2,3,4 se propone con probabilidad exacta del 20%
+            xi = int(self.a + (self.b - self.a + 1) * r1)
             fx = poisson_pmf(xi, self.lam)
 
             if r2 <= fx / self.M:

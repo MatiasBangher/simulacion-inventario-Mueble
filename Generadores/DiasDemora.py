@@ -14,4 +14,6 @@ class GeneradorDemora:
 
     def siguiente(self) -> int:
         r = self.gen.siguiente()
-        return round(self.de_min + (self.de_max - self.de_min) * r)
+        # Fórmula correcta para distribución Uniforme Discreta:
+        # X = floor(A + (B - A + 1) * r)  →  P(X=x) = 1/3 para x ∈ {7, 8, 9}
+        return int(self.de_min + (self.de_max - self.de_min + 1) * r)
