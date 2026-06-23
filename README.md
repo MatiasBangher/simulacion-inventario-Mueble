@@ -117,9 +117,44 @@ Al ejecutar la simulación, `main.py` corre de forma secuencial:
 1. **Situación Actual**: Bucle semanal (revisión los lunes) con un pedido "a ojo" entre $1$ y $(SMR - ST)$.
 2. **Modelo Ideal**: Bucle diario (revisión continua) con reorden cuando $ST < SR$. Si se cumple la condición y no hay pedidos pendientes (`PE == 0`), se ordena una cantidad exacta de $TP = MAX\_CAP - ST$.
 
-### Optimización del Punto de Reorden (SR)
-El punto de entrada realiza un barrido automático de $SR$ entre $0$ y $MAX\_CAP - 1$. Esto permite analizar cuantitativamente la compensación financiera típica de la gestión de stock:
-* **SR muy bajo**: Reduce los costos de almacenamiento pero incrementa gravemente el costo de ventas perdidas.
-* **SR muy alto**: Evita quiebres de stock pero incrementa exponencialmente los costos de almacenamiento.
-* **SR Óptimo**: Aquel valor que minimiza la suma total de los costos de funcionamiento (`CTF`).
+### 🔄 Réplicas Monte Carlo
+Para obtener estimaciones estadísticamente estables e independientes de las condiciones iniciales de una única corrida, `main.py` ejecuta **1.500 réplicas** de cada modelo (situación actual y cada escenario de $SR$ del modelo ideal), promediando los costos e indicadores de salida.
+
+### 📅 Datos de Demora: Transformada Inversa "de corrido"
+A sugerencia de la cátedra, la simulación utiliza el archivo `Tablas - Trasnformada Inversa de corrido.csv`. Este modelo de demora calcula los tiempos de entrega del proveedor basándose en días corridos totales (**sin diferenciar entre días hábiles y no hábiles**), lo cual se ve reflejado en los tiempos simulados de tránsito ($DE \sim \text{Uniforme}(7, 9)$ días).
+
+### 📦 Costo de Almacenamiento Sobrante (CSOB)
+La profesora destacó que el costo de almacenamiento sobrante tiene un **alto costo financiero**. En la simulación:
+* Se aplica una penalización diaria de `CSOB = $5.00` por cada unidad de stock que arribe al depósito y supere la capacidad máxima establecida (`MAX_CAP = 10`).
+* En la **Situación Actual**, este costo promedio resulta muy bajo (~$0.03) debido a que la política de pedidos "a ojo" tiende a subabastecer el sistema. Sin embargo, en políticas con pedidos de tamaño fijo o entregas desfasadas, representa una variable de alto riesgo crítico.
+
+### 🎯 Optimización del Punto de Reorden (SR)
+El script realiza un barrido automático de $SR$ entre $0$ y $MAX\_CAP - 1$ aplicando la técnica de **Números Aleatorios Comunes (Common Random Numbers - CRN)** con el fin de realizar una comparación estadísticamente justa compartiendo la misma secuencia pseudoaleatoria inicial. 
+
+---
+
+## 📊 Últimos Resultados Obtenidos (1.500 Réplicas)
+
+Bajo los parámetros estándar ($CEP = \$100$, $CVP = \$250$, $CALM = \$2$, $CSOB = \$5$):
+
+### 1. Comparativa de Escenarios del Modelo Ideal
+* **SR = 0 (Sin reorden)**: Costo promedio $\approx \$26.766,90$ (excesivas ventas perdidas).
+* **SR = 4**: Costo promedio $\approx \$15.337,10$.
+* **SR = 7 ⭐ (ÓPTIMO)**: Costo promedio **$\approx \$13.292,24$** (mínimo costo financiero).
+
+### 2. Comparativa Final: Situación Actual vs. Modelo Ideal Óptimo ($SR = 7$)
+
+| Métrica (Valores Medios) | Situación Actual | Modelo Ideal ($SR = 7$) | Ahorro / Beneficio |
+| :--- | :---: | :---: | :---: |
+| Costo Almacenamiento Regular | $\$210,44$ | $\$214,31$ | $-\$3,87$ (Costo marginal adicional) |
+| Costo Almacenamiento Sobrante | $\$0,03$ | $N/A$ | — |
+| Costo Ventas Perdidas | $\$15.239,67$ | $\$12.177,67$ | **$-\$3.062,00$** (Menor quiebre de stock) |
+| Costo Emisión de Pedidos | $\$1.100,00$ | $\$900,27$ | **$-\$199,73$** (Menos pedidos y más eficientes) |
+| **Costo Total (CTF)** | **$\$16.550,14$** | **$\$13.292,24$** | **$-\$3.257,90$ (Ahorro del $19.7\%$)** |
+| Unidades Perdidas | $60,96$ | $48,71$ | $-12,25$ unidades $(-20.1\%)$ |
+| Pedidos Realizados | $11,00$ | $9,00$ | $-2,00$ pedidos |
+
+### Conclusión Principal
+El pasaje de una revisión semanal con pedidos "a ojo" a una política de **Revisión Continua con un Punto de Reorden ($SR = 7$)** permite a la distribuidora **S&M** reducir sus costos logísticos globales en casi un **$20\%$**, disminuyendo notablemente las ventas perdidas ante quiebres de stock.
+
 
