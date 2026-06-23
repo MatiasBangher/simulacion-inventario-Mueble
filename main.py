@@ -21,7 +21,7 @@ CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día): aplica c
                    #   indica que tiene ALTO COSTO, relevante si la política de reorden es agresiva.
 
 # Parámetros de Simulación
-TF      = 70       # Tiempo final de simulación (días hábiles)
+TF      = 70       # Tiempo final de simulación (días corridos)
 SMR     = 10       # Stock Medio de Referencia (situación actual)
 MAX_CAP = 10       # Capacidad máxima del depósito
 ST_0    = 7        # Stock inicial
@@ -32,7 +32,7 @@ ALFA    = 0.05
 # Rutas de archivos CSV
 CSV_PSEUDO    = "Tablas - nro_pseudo.csv"
 CSV_RECHAZO   = "Tablas - M. Rechazo.csv"
-CSV_INVERSA   = "Tablas - Trasnformada Inversa de corrido.csv"   # Todos los días (sin diferenciar hábiles)
+CSV_INVERSA   = "Tablas - Trasnformada Inversa de corrido.csv"   # Todos los días (de corrido, sin diferenciar hábiles)
 
 CSV_HISTORICO = "Tablas - Mueble-Camilo.csv"
 

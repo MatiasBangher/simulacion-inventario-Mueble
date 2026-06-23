@@ -103,7 +103,7 @@ CALM    = 2.0      # Costo de almacenamiento regular ($/unidad·día)
 CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día) (Solo Modelo Actual)
 
 # Simulación
-TF      = 70       # Tiempo final de simulación (días hábiles)
+TF      = 70       # Tiempo final de simulación (días corridos)
 SMR     = 10       # Stock Medio de Referencia (punto de reorden)
 MAX_CAP = 10       # Capacidad máxima del depósito
 ST_0    = 7        # Stock inicial

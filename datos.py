@@ -113,12 +113,12 @@ def imprimir_parametros(params: dict):
     print(f"\n  Método de Rechazo (demanda Poisson):")
     print(f"    λ={pr['lam']}  a={pr['a_rej']}  b={pr['b_rej']}  M={pr['m_rej']}")
     print(f"\n  Transformada Inversa (demora proveedor):")
-    print(f"    DE ~ Uniforme({pu['DE_MIN']}, {pu['DE_MAX']}) días hábiles")
+    print(f"    DE ~ Uniforme({pu['DE_MIN']}, {pu['DE_MAX']}) días corridos")
     print(f"\n  Histórico observado:")
     print(f"    Días: {len(df_d)}   Pedidos: {len(df_p)}"
           f"   Unid. perdidas: {int(df_d['dem_insatisfecha'].sum())}")
     print(f"\n  Pedidos reales al proveedor:")
-    print(f"    {'N°':>3} | {'Pedido':>8} | {'Llegada':>9} | {'DE (háb.)':>10}")
+    print(f"    {'N°':>3} | {'Pedido':>8} | {'Llegada':>9} | {'DE (corr.)':>10}")
     for _, row in df_p.iterrows():
         print(f"    {int(row['nro_pedido']):>3} | {str(row['dia_pedido']):>8} | "
               f"{str(row['dia_llegada']):>9} | {row['demora_hab']:>10.0f}")
