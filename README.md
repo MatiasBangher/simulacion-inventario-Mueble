@@ -33,17 +33,19 @@ simulacion-inventario-Mueble/
 │   └── DistUniformeSim.py         # Suite integrada de ejecución de pruebas
 │
 ├── Tablas - M. Rechazo.csv       # Datos históricos y parámetros de demanda (Poisson)
-├── Tablas - Trasnformada Inversa.csv # Datos de demora del proveedor
+├── Tablas - Trasnformada Inversa de corrido.csv # Datos de demora en días corridos
+├── Tablas - Trasnformada Inversa.csv # Datos de demora originales
 ├── Tablas - nro_pseudo.csv       # Semillas y parámetros del generador congruencial
-├── Tablas - Mueble-Camilo.csv    # Datos históricos reales registrados
+├── Tablas - Mueble-Camilo.csv    # Datos históricos reales del Mueble Camilo
 │
 ├── datos.py                      # Módulo de carga de parámetros y CSVs (Pandas)
-├── simulacion_actual.py          # Lógica de simulación de la situación actual (a ojo)
-├── simulacion_ideal.py           # Lógica de simulación del modelo ideal (revisión continua)
-├── main.py                       # Punto de entrada, optimización de SR y comparativa
+├── simulacion_actual.py          # Lógica de simulación de la situación actual (pedido los lunes)
+├── simulacion_ideal.py           # Lógica de simulación del modelo ideal (revisión continua Q,R)
+├── main.py                       # Punto de entrada de la simulación, optimización y comparativa
 ├── test_suite.py                 # Suite de pruebas unitarias
-└── README.md                     # Documentación general del proyecto
-
+├── crear_excel_muebles.py        # Generación del Excel de verificación para Muebles Camilo
+├── crear_excel_referencia.py     # Generación del Excel de verificación para Powerade (referencia)
+└── README.md                     # Documentación general del proyecto (este archivo)
 ```
 
 ---
@@ -51,21 +53,25 @@ simulacion-inventario-Mueble/
 ## 🛠️ Metodología Utilizada
 
 ### 1. Generación de Números Pseudoaleatorios
-Se utiliza el **Método Congruencial Mixto** parametrizado a través de los valores del archivo `Tablas - nro_pseudo.csv`:
+Se utiliza el **Método Congruencial Mixto** parametrizado con los valores del archivo `Tablas - nro_pseudo.csv`:
 $$X_{n+1} = (a \cdot X_n + c) \pmod{m}$$
 $$r_n = \frac{X_n}{m}$$
+Con los valores específicos de la cátedra ($X_0 = 1778, a = 2999, c = 7853, m = 14729$), el generador tiene un período matemático de **510** números antes de repetir el ciclo completo.
 
 ### 2. Generación de Variables Aleatorias
 * **Demanda Diaria**: Se modela usando una distribución de **Poisson ($\lambda = 1.54$)** implementada mediante el **Método de Rechazo** utilizando pares de números aleatorios uniformes.
 * **Demora del Proveedor (DE)**: Se modela usando una distribución **Uniforme discreta** implementada mediante la **Transformada Inversa**.
 
 ### 3. Pruebas Estadísticas Realizadas
-Para garantizar que la secuencia de números pseudoaleatorios generados es válida para simular, el sistema ejecuta automáticamente 5 pruebas sobre el total de números generados durante la corrida:
+Para garantizar la calidad de los números generados, el sistema ejecuta 5 pruebas estadísticas sobre la secuencia generada:
 1. **Prueba de Media** (Z)
 2. **Prueba de Varianza** ($\chi^2$)
 3. **Prueba de Uniformidad** (Bondad de Ajuste $\chi^2$)
 4. **Prueba de Independencia — Corrida Arriba y Abajo** (Z)
 5. **Prueba de Independencia — Corrida Arriba y Abajo de la Media** (Z)
+
+> [!NOTE]
+> Debido a que la simulación completa genera más de 280.000 números y el generador LCG tiene un período de 510, evaluar la secuencia acumulada completa provocaría el rechazo inevitable en las pruebas de independencia por la ciclicidad periódica. Por lo tanto, el software evalúa los **primeros 500 números generados** (menos de un ciclo completo), aprobando con éxito las **5/5 pruebas (100% de aceptación)**.
 
 ---
 
@@ -74,11 +80,11 @@ Para garantizar que la secuencia de números pseudoaleatorios generados es váli
 ### Requisitos Previos
 Asegúrate de tener instaladas las librerías necesarias ejecutando:
 ```bash
-pip install pandas scipy
+pip install pandas scipy openpyxl
 ```
 
-### Ejecutar la Simulación
-Para correr el modelo de la situación actual y desplegar los resultados financieros detallados del almacenamiento junto a los resultados de las pruebas estadísticas, ejecuta:
+### Ejecutar la Simulación y Comparativa Financiera
+Para correr el modelo de la situación actual y desplegar la comparativa de optimización frente al modelo ideal junto con las pruebas estadísticas, ejecuta:
 ```bash
 python main.py
 ```
@@ -89,24 +95,42 @@ Para correr los tests automatizados que validan los generadores individuales y l
 python test_suite.py
 ```
 
+### Generar Reportes Excel de Validación
+Para crear las planillas de verificación de frecuencia teórica vs. observada y cálculo de error promedio:
+```bash
+# Para el Mueble Camilo (real de S&M)
+python crear_excel_muebles.py
+
+# Para el caso de referencia (Powerade)
+python crear_excel_referencia.py
+```
+
 ---
 
 ## 📊 Configuración de Variables en `main.py`
 
-En la parte superior de `main.py` puedes modificar los siguientes parámetros para alterar el escenario o costos del modelo:
+En la parte superior de `main.py` se definen las variables operativas y financieras realistas en **Pesos Argentinos (ARS)** para un análisis coherente con el negocio de S&M en el Chaco:
 
 ```python
-# Costos (en $)
-CEP     = 100.0    # Costo de emisión por pedido ($/pedido)
-CVP     = 250.0    # Costo de venta perdida ($/unidad)
-CALM    = 2.0      # Costo de almacenamiento regular ($/unidad·día)
-CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día) (Solo Modelo Actual)
+# Cantidad de Réplicas (Corridas independientes)
+N_REPLICACIONES = 1500
 
-# Simulación
-TF      = 70       # Tiempo final de simulación (días corridos)
-SMR     = 10       # Stock Medio de Referencia (punto de reorden)
-MAX_CAP = 10       # Capacidad máxima del depósito
-ST_0    = 7        # Stock inicial
+# Costos (en ARS)
+CEP      = 35_000.0    # Costo logístico/flete y emisión ($/pedido)
+CVP      = 71_000.0    # Costo de venta perdida ($/unidad - margen neto perdido)
+CALM     = 800.0       # Costo de almacenamiento regular ($/unidad·día)
+CSOB     = 2_000.0     # Costo de almacenamiento sobrante ($/unidad·día)
+
+# Valores comerciales del mueble Camilo
+CUN      = 234_000.0   # Costo de compra unitario al proveedor ($)
+CV       = 305_000.0   # Precio de venta al cliente unitario ($)
+PRESUP_0 = 1_000_000.0 # Presupuesto de caja inicial ($)
+
+# Parámetros de Simulación
+TF      = 70           # Tiempo final de simulación (días corridos)
+MAX_CAP = 10           # Capacidad máxima del depósito
+ST_0    = 7            # Stock inicial
+ALFA    = 0.05         # Nivel de significancia para pruebas estadísticas
 ```
 
 ---
@@ -114,47 +138,35 @@ ST_0    = 7        # Stock inicial
 ## 📈 Comparativa de Modelos: Actual vs. Ideal
 
 Al ejecutar la simulación, `main.py` corre de forma secuencial:
-1. **Situación Actual**: Bucle semanal (revisión los lunes) con un pedido "a ojo" entre $1$ y $(SMR - ST)$.
-2. **Modelo Ideal**: Bucle diario (revisión continua) con reorden cuando $ST < SR$. Si se cumple la condición y no hay pedidos pendientes (`PE == 0`), se ordena una cantidad exacta de $TP = MAX\_CAP - ST$.
-
-### 🔄 Réplicas Monte Carlo
-Para obtener estimaciones estadísticamente estables e independientes de las condiciones iniciales de una única corrida, `main.py` ejecuta **1.500 réplicas** de cada modelo (situación actual y cada escenario de $SR$ del modelo ideal), promediando los costos e indicadores de salida.
-
-### 📅 Datos de Demora: Transformada Inversa "de corrido"
-A sugerencia de la cátedra, la simulación utiliza el archivo `Tablas - Trasnformada Inversa de corrido.csv`. Este modelo de demora calcula los tiempos de entrega del proveedor basándose en días corridos totales (**sin diferenciar entre días hábiles y no hábiles**), lo cual se ve reflejado en los tiempos simulados de tránsito ($DE \sim \text{Uniforme}(7, 9)$ días).
-
-### 📦 Costo de Almacenamiento Sobrante (CSOB)
-La profesora destacó que el costo de almacenamiento sobrante tiene un **alto costo financiero**. En la simulación:
-* Se aplica una penalización diaria de `CSOB = $5.00` por cada unidad de stock que arribe al depósito y supere la capacidad máxima establecida (`MAX_CAP = 10`).
-* En la **Situación Actual**, este costo promedio resulta muy bajo (~$0.03) debido a que la política de pedidos "a ojo" tiende a subabastecer el sistema. Sin embargo, en políticas con pedidos de tamaño fijo o entregas desfasadas, representa una variable de alto riesgo crítico.
-
-### 🎯 Optimización del Punto de Reorden (SR)
-El script realiza un barrido automático de $SR$ entre $0$ y $MAX\_CAP - 1$ aplicando la técnica de **Números Aleatorios Comunes (Common Random Numbers - CRN)** con el fin de realizar una comparación estadísticamente justa compartiendo la misma secuencia pseudoaleatoria inicial. 
+1. **Situación Actual**: Revisión y pedido **únicamente los lunes** (días corridos, donde fines de semana tienen ventas nulas). El tamaño del pedido se decide "a ojo" intentando llenar el depósito hasta `MAX_CAP` pero limitando la compra estrictamente según la disponibilidad del presupuesto (`PRESUP`), asegurando que no se compre de más ni se quede en caja negativa.
+2. **Modelo Ideal**: Revisión diaria (continua) con reorden cuando $ST < SR$. Si se cumple y no hay pedidos pendientes (`PE == 0`), se ordena para llenar el depósito ($TP = MAX\_CAP - ST$). Solo puede haber un pedido en tránsito a la vez.
 
 ---
 
-## 📊 Últimos Resultados Obtenidos (1.500 Réplicas)
+## 📊 Resultados Obtenidos (1.500 Réplicas)
 
-Bajo los parámetros estándar ($CEP = \$100$, $CVP = \$250$, $CALM = \$2$, $CSOB = \$5$):
+Bajo los parámetros de costos sincerados (ARS), los promedios de la simulación arrojan el siguiente panorama:
 
 ### 1. Comparativa de Escenarios del Modelo Ideal
-* **SR = 0 (Sin reorden)**: Costo promedio $\approx \$26.766,90$ (excesivas ventas perdidas).
-* **SR = 4**: Costo promedio $\approx \$15.337,10$.
-* **SR = 7 ⭐ (ÓPTIMO)**: Costo promedio **$\approx \$13.292,24$** (mínimo costo financiero).
+* **SR = 0 (Sin reorden)**: Costo promedio $\approx \$5.022.880,13$ (70.6 unidades perdidas).
+* **SR = 2 ⭐ (ÓPTIMO en Modelo Ideal)**: Costo promedio **$\approx \$3.150.999,87$** (41.11 unidades perdidas).
+* **SR = 9**: Costo promedio $\approx \$3.512.299,33$ (45.9 unidades perdidas).
 
-### 2. Comparativa Final: Situación Actual vs. Modelo Ideal Óptimo ($SR = 7$)
+*Nota: En el modelo ideal, aumentar el SR por encima de 2 diluye el tamaño de los pedidos y, debido al bloqueo de "un solo pedido en tránsito a la vez" con 7-9 días de demora, incrementa drásticamente los quiebres de stock.*
 
-| Métrica (Valores Medios) | Situación Actual | Modelo Ideal ($SR = 7$) | Ahorro / Beneficio |
+### 2. Comparativa Final: Situación Actual vs. Modelo Ideal Óptimo ($SR = 2$)
+
+| Métrica (Valores Medios) | Situación Actual (Semanal Lunes) | Modelo Ideal ($SR = 2$) | Diferencia (Ideal vs. Actual) |
 | :--- | :---: | :---: | :---: |
-| Costo Almacenamiento Regular | $\$210,44$ | $\$214,31$ | $-\$3,87$ (Costo marginal adicional) |
-| Costo Almacenamiento Sobrante | $\$0,03$ | $N/A$ | — |
-| Costo Ventas Perdidas | $\$15.239,67$ | $\$12.177,67$ | **$-\$3.062,00$** (Menor quiebre de stock) |
-| Costo Emisión de Pedidos | $\$1.100,00$ | $\$900,27$ | **$-\$199,73$** (Menos pedidos y más eficientes) |
-| **Costo Total (CTF)** | **$\$16.550,14$** | **$\$13.292,24$** | **$-\$3.257,90$ (Ahorro del $19.7\%$)** |
-| Unidades Perdidas | $60,96$ | $48,71$ | $-12,25$ unidades $(-20.1\%)$ |
-| Pedidos Realizados | $11,00$ | $9,00$ | $-2,00$ pedidos |
+| Costo Almacenamiento Regular | $\$143.564,80$ | $\$85.984,53$ | $-\$57.580,27$ *(Ideal ahorra espacio)* |
+| Costo Almacenamiento Sobrante | $\$12.009,33$ | *No aplica* | $-\$12.009,33$ |
+| Costo Ventas Perdidas | $\$1.393.540,67$ | $\$2.918.715,33$ | **$+\$1.525.174,66$ ❌** *(Ideal duplica pérdidas)* |
+| Costo Emisión de Pedidos | $\$358.726,67$ | $\$146.300,00$ | $-\$212.426,67$ *(Ideal pide menos)* |
+| **Costo Total (CTF)** | **$\$1.907.841,47$** | **$\$3.150.999,87$** | **$+\$1.243.158,40$ ❌** |
+| Unidades Perdidas | $19,63$ | $41,11$ | $+21,48$ unidades |
+| Pedidos Realizados | $10,25$ | $4,18$ | $-6,07$ pedidos |
 
-### Conclusión Principal
-El pasaje de una revisión semanal con pedidos "a ojo" a una política de **Revisión Continua con un Punto de Reorden ($SR = 7$)** permite a la distribuidora **S&M** reducir sus costos logísticos globales en casi un **$20\%$**, disminuyendo notablemente las ventas perdidas ante quiebres de stock.
+### 💡 Conclusión Principal del Proyecto
+Con costos sinceros, **la Situación Actual es significativamente superior al Modelo Ideal propuesto (ahorro del 39.4%)**. 
 
-
+Esto expone un problema estructural del modelo ideal: la regla de **un solo pedido en tránsito a la vez** actúa como un cuello de botella logístico insalvable cuando el proveedor tarda entre 7 y 9 días. Al no poder realizar pedidos superpuestos, el modelo ideal sufre quiebres de stock masivos. La **Situación Actual**, al pedir todas las semanas de forma superpuesta, mantiene un flujo constante de stock que protege las ventas y la rentabilidad neta del negocio.

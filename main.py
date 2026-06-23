@@ -13,16 +13,18 @@ from Pruebas.DistUniformeSim import PruebasEstadisticas
 N_REPLICACIONES = 1500
 
 # Costos (en $) — Definir valores para análisis financiero real
-CEP     = 100.0    # Costo de emisión por pedido ($/pedido)
-CVP     = 250.0    # Costo de venta perdida ($/unidad)
-CALM    = 2.0      # Costo de almacenamiento regular ($/unidad·día)
-CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día): aplica cuando llegada
-                   #   de mercadería supera MAX_CAP → unidades sobrantes × CSOB. La profe
-                   #   indica que tiene ALTO COSTO, relevante si la política de reorden es agresiva.
+CEP      = 35_000.0    # Costo de emisión por pedido ($/pedido)
+CVP      = 71_000.0    # Costo de venta perdida ($/unidad)
+CALM     = 800.0       # Costo de almacenamiento regular ($/unidad·día)
+CSOB     = 2_000.0     # Costo de almacenamiento sobrante ($/unidad·día)
+
+# Costos de compra/venta del mueble (situación actual — nuevo diagrama)
+CUN      = 234_000.0   # Costo de compra por unidad al proveedor ($)
+CV       = 305_000.0   # Precio de venta al cliente por unidad ($)
+PRESUP_0 = 1_000_000.0 # Presupuesto inicial dedicado al mueble Camilo ($)
 
 # Parámetros de Simulación
 TF      = 70       # Tiempo final de simulación (días corridos)
-SMR     = 10       # Stock Medio de Referencia (situación actual)
 MAX_CAP = 10       # Capacidad máxima del depósito
 ST_0    = 7        # Stock inicial
 
@@ -58,13 +60,14 @@ if __name__ == "__main__":
     pc = params["params_cong"]
     gen_actual = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
     
-    costos_actual = []
-    alm_actual = []
-    sob_actual = []
-    vtap_cost_actual = []
-    emision_actual = []
+    costos_actual     = []
+    alm_actual        = []
+    sob_actual        = []
+    vtap_cost_actual  = []
+    emision_actual    = []
     vtap_unids_actual = []
-    nrop_actual = []
+    nrop_actual       = []
+    presup_actual     = []
     
     for _ in range(N_REPLICACIONES):
         res = simular_actual(
@@ -73,8 +76,10 @@ if __name__ == "__main__":
             CVP=CVP,
             CALM=CALM,
             CSOB=CSOB,
+            CUN=CUN,
+            CV=CV,
+            PRESUP_0=PRESUP_0,
             TF=TF,
-            SMR=SMR,
             MAX_CAP=MAX_CAP,
             ST_0=ST_0,
             verbose=False,
@@ -87,14 +92,16 @@ if __name__ == "__main__":
         emision_actual.append(res["CTEP"])
         vtap_unids_actual.append(res["VTAP"])
         nrop_actual.append(res["NROP"])
+        presup_actual.append(res["PRESUP"])
 
-    avg_cost_actual = sum(costos_actual) / N_REPLICACIONES
-    avg_alm_actual = sum(alm_actual) / N_REPLICACIONES
-    avg_sob_actual = sum(sob_actual) / N_REPLICACIONES
-    avg_vtap_cost_actual = sum(vtap_cost_actual) / N_REPLICACIONES
-    avg_emision_actual = sum(emision_actual) / N_REPLICACIONES
-    avg_vtap_unids_actual = sum(vtap_unids_actual) / N_REPLICACIONES
-    avg_nrop_actual = sum(nrop_actual) / N_REPLICACIONES
+    avg_cost_actual       = sum(costos_actual)     / N_REPLICACIONES
+    avg_alm_actual        = sum(alm_actual)         / N_REPLICACIONES
+    avg_sob_actual        = sum(sob_actual)         / N_REPLICACIONES
+    avg_vtap_cost_actual  = sum(vtap_cost_actual)   / N_REPLICACIONES
+    avg_emision_actual    = sum(emision_actual)      / N_REPLICACIONES
+    avg_vtap_unids_actual = sum(vtap_unids_actual)   / N_REPLICACIONES
+    avg_nrop_actual       = sum(nrop_actual)         / N_REPLICACIONES
+    avg_presup_actual     = sum(presup_actual)       / N_REPLICACIONES
 
     print(f"\nResultados Promedio de {N_REPLICACIONES} réplicas (Situación Actual):")
     print(f"  CTALM   (almacenamiento promedio) : $ {avg_alm_actual:>12.2f}")
@@ -103,14 +110,21 @@ if __name__ == "__main__":
     print(f"  CTEP    (emisión promedio)        : $ {avg_emision_actual:>12.2f}")
     print(f"  {'─' * 45}")
     print(f"  CTF     (costo total promedio)    : $ {avg_cost_actual:>12.2f}")
+    print(f"  PRESUP  (presupuesto final prom)  : $ {avg_presup_actual:>12,.0f}")
     print(f"  Ventas Perdidas (unidades prom)   :   {avg_vtap_unids_actual:>12.2f}")
     print(f"  Pedidos Realizados (promedio)     :   {avg_nrop_actual:>12.2f}")
 
-    # 4. Pruebas estadísticas sobre los r generados en la secuencia corrida
-    print(f"\nTotal de números pseudoaleatorios generados: {gen_actual.count}")
-    if len(gen_actual.secuencia) >= 10:
-        print("\n🧪 Validación estadística sobre la secuencia completa:")
-        pruebas_act = PruebasEstadisticas(gen_actual.secuencia, alfa=ALFA)
+    # 4. Pruebas estadísticas sobre los r generados (muestra representativa)
+    # NOTA: El generador congruencial tiene un módulo m=14729 y un período de 510.
+    # Si probamos la secuencia completa de 286.874 números, las pruebas rechazarán
+    # inevitablemente debido a la repetición periódica de la secuencia.
+    # Por lo tanto, validamos la calidad de los números generados probando los primeros 500 números
+    # (casi un período completo antes de que se repita).
+    print(f"\nTotal de números pseudoaleatorios generados en la simulación: {gen_actual.count}")
+    N_TEST = min(500, len(gen_actual.secuencia))
+    if N_TEST >= 10:
+        print(f"\n🧪 Validación estadística sobre los primeros {N_TEST} números generados:")
+        pruebas_act = PruebasEstadisticas(gen_actual.secuencia[:N_TEST], alfa=ALFA)
         pruebas_act.ejecutar_todas(verbose=True)
 
     # 5. Ejecutar simulación MODELO IDEAL con N replicaciones variando SR

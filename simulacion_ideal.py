@@ -71,8 +71,31 @@ def simular_ideal(
         print(SEP)
 
     # ── Loop principal ────────────────────────────────────────────────────────
+    DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
     while True:
         T      += 1
+        dia_semana  = T % 7
+        dia_nombre  = DIAS[dia_semana]
+        DIA_HABIL   = dia_semana <= 4   # Lun–Vie; Sáb=5, Dom=6 → no hábil
+
+        # ── Fin de semana: sin actividad (igual que simulacion_actual) ────────
+        if not DIA_HABIL:
+            historial.append({
+                "T": T, "VD": 0, "ST_ini": ST, "ST": ST,
+                "VTAP_dia": 0, "PE": PE, "NROP": NROP,
+                "CTALM": CTALM, "CVTAP": CVTAP, "CTEP": CTEP,
+                "pedido": None, "llegada": False,
+            })
+            if verbose:
+                print(
+                    f"{T:>4} | {'---':>3} | {ST:>6} | {ST:>6} | "
+                    f"{'---':>6} | {PE:>2} | {'[No hábil — fin de semana]':<35} | "
+                    f"{'---':>9} | {'---':>9} | {'---':>7}"
+                )
+            if T >= TF:
+                break
+            continue
+
         ST_ini  = ST
         llegada_hoy = False
 
@@ -133,6 +156,7 @@ def simular_ideal(
 
         if T >= TF:
             break
+
 
     # ── Resultados finales ────────────────────────────────────────────────────
     CTF = CTALM + CVTAP + CTEP
