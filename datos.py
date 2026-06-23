@@ -56,11 +56,27 @@ def cargar_parametros(
 
     # ── Datos históricos observados ───────────────────────────────────────────
     df_hist = pd.read_csv(csv_historico, header=2)
-    df_hist.columns = [
+    num_cols = len(df_hist.columns)
+    
+    col_names = [
         "idx", "semana", "fecha", "stock_ini", "demanda_total",
-        "unidades_vendidas", "dem_insatisfecha", "pedido_prov", "stock_fin",
-        "sep", "nro_pedido", "dia_pedido", "dia_llegada", "demora_cal", "demora_hab"
+        "unidades_vendidas", "dem_insatisfecha", "pedido_prov", "stock_fin"
     ]
+    
+    if num_cols >= 15:
+        # Si tiene las columnas adicionales a la derecha (pedidos)
+        df_hist.columns = col_names + ["sep", "nro_pedido", "dia_pedido", "dia_llegada", "demora_cal", "demora_hab"]
+        df_pedidos = (
+            df_hist[df_hist["nro_pedido"].notna()]
+            .copy()[["nro_pedido", "dia_pedido", "dia_llegada", "demora_cal", "demora_hab"]]
+            .dropna(subset=["nro_pedido"])
+        )
+        df_pedidos["demora_hab"] = pd.to_numeric(df_pedidos["demora_hab"], errors="coerce")
+    else:
+        # Si solo tiene las columnas básicas de diario
+        df_hist.columns = col_names[:num_cols]
+        df_pedidos = pd.DataFrame(columns=["nro_pedido", "dia_pedido", "dia_llegada", "demora_hab"])
+        
     mask_fecha  = df_hist["fecha"].notna() & df_hist["fecha"].astype(str).str.contains("/")
     df_diario   = df_hist[mask_fecha].copy()[[
         "fecha", "semana", "stock_ini", "unidades_vendidas",
@@ -72,12 +88,6 @@ def cargar_parametros(
         pd.to_numeric(df_diario["dem_insatisfecha"], errors="coerce").fillna(0).astype(int)
     )
 
-    df_pedidos = (
-        df_hist[df_hist["nro_pedido"].notna()]
-        .copy()[["nro_pedido", "dia_pedido", "dia_llegada", "demora_cal", "demora_hab"]]
-        .dropna(subset=["nro_pedido"])
-    )
-    df_pedidos["demora_hab"] = pd.to_numeric(df_pedidos["demora_hab"], errors="coerce")
 
     return {
         "params_cong":     params_cong,

@@ -16,7 +16,9 @@ N_REPLICACIONES = 1500
 CEP     = 100.0    # Costo de emisión por pedido ($/pedido)
 CVP     = 250.0    # Costo de venta perdida ($/unidad)
 CALM    = 2.0      # Costo de almacenamiento regular ($/unidad·día)
-CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día) (Solo Modelo Actual)
+CSOB    = 5.0      # Costo de almacenamiento sobrante ($/unidad·día): aplica cuando llegada
+                   #   de mercadería supera MAX_CAP → unidades sobrantes × CSOB. La profe
+                   #   indica que tiene ALTO COSTO, relevante si la política de reorden es agresiva.
 
 # Parámetros de Simulación
 TF      = 70       # Tiempo final de simulación (días hábiles)
@@ -30,7 +32,8 @@ ALFA    = 0.05
 # Rutas de archivos CSV
 CSV_PSEUDO    = "Tablas - nro_pseudo.csv"
 CSV_RECHAZO   = "Tablas - M. Rechazo.csv"
-CSV_INVERSA   = "Tablas - Trasnformada Inversa.csv"
+CSV_INVERSA   = "Tablas - Trasnformada Inversa de corrido.csv"   # Todos los días (sin diferenciar hábiles)
+
 CSV_HISTORICO = "Tablas - Mueble-Camilo.csv"
 
 
