@@ -5,6 +5,7 @@ from simulacion_actual import simular_actual
 from simulacion_ideal import simular_ideal
 from Pruebas.GenNumsAleatorios import GeneradorCongruencial
 from Pruebas.DistUniformeSim import PruebasEstadisticas
+from graficas import generar_graficas_actual
 
 # ==============================================================================
 # ⚙️ PARÁMETROS CONFIGURABLES  ← Modificar valores aquí
@@ -161,7 +162,24 @@ if __name__ == "__main__":
             print("│  La secuencia NO supera todas las pruebas de aleatoriedad.             │")
         print("└────────────────────────────────────────────────────────────────────────┘\n")
 
-    # 5. Ejecutar simulación MODELO IDEAL con N replicaciones variando SR
+    # 5. Generar gráficas de análisis de la Situación Actual
+    print("\n" + "="*80)
+    print(" 📊  GENERANDO GRÁFICAS DE ANÁLISIS — SITUACIÓN ACTUAL")
+    print("="*80)
+    generar_graficas_actual(
+        costos_actual    = costos_actual,
+        alm_actual       = alm_actual,
+        sob_actual       = sob_actual,
+        vtap_cost_actual = vtap_cost_actual,
+        emision_actual   = emision_actual,
+        N_REPLICACIONES  = N_REPLICACIONES,
+        TF               = TF,
+        alfa             = ALFA,
+        guardar          = True,
+        nombre_archivo   = "graficas_situacion_actual.png",
+    )
+
+    # 6. Ejecutar simulación MODELO IDEAL con N replicaciones variando SR
     # print("\n" + "="*80)
     # print(f" ▶️  EJECUTANDO MODELO IDEAL: {N_REPLICACIONES} RÉPLICAS (Búsqueda de SR óptimo)")
     # print("="*80)

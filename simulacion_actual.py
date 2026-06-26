@@ -47,7 +47,7 @@ def simular_actual(
     gen_demora  = GeneradorDemora(gen, pu["DE_MIN"], pu["DE_MAX"])
 
     # ── Estado inicial ────────────────────────────────────────────────────────
-    T       = -1
+    T       = -1  # DIA INICIAL se pone -1 porque en el primer ciclo de while se suma 1 antes de evaluar las condiciones donde 0 corresponde a dia Lunes
     ST      = ST_0
     FLL     = {}    # {nrop: día_llegada}
     TP_lst  = {}    # {nrop: cantidad_pedida}
