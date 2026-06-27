@@ -48,17 +48,17 @@ def simular_actual(
 
     # ── Estado inicial ────────────────────────────────────────────────────────
     T       = -1  # DIA INICIAL se pone -1 porque en el primer ciclo de while se suma 1 antes de evaluar las condiciones donde 0 corresponde a dia Lunes
-    ST      = ST_0
+    ST      = ST_0 # stock actual
     FLL     = {}    # {nrop: día_llegada}
     TP_lst  = {}    # {nrop: cantidad_pedida}
 
-    CTALM   = 0.0
-    CVTAP   = 0.0
-    CTEP    = 0.0
-    CALMSOB = 0.0
-    VTAP    = 0
-    NROP    = 0
-    PRESUP  = PRESUP_0
+    CTALM   = 0.0 # costo total de almacenamiento
+    CVTAP   = 0.0 # costo total de ventas perdidas
+    CTEP    = 0.0 # costo total de emisión de pedidos
+    CALMSOB = 0.0 # costo total de almacenamiento sobrante
+    VTAP    = 0   # ventas totales perdidas
+    NROP    = 0   # numero de pedidos
+    PRESUP  = PRESUP_0 # presupuesto inicial
     historial: list[dict] = []
 
     DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]

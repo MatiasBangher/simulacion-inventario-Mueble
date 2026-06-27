@@ -15,15 +15,15 @@ from graficas import generar_graficas_actual
 N_REPLICACIONES = 1500
 
 # Costos (en $) — Definir valores para análisis financiero real
-CEP      = 35_000.0    # Costo de emisión por pedido ($/pedido)
-CVP      = 71_000.0    # Costo de venta perdida ($/unidad)
-CALM     = 800.0       # Costo de almacenamiento regular ($/unidad·día)
-CSOB     = 2_000.0     # Costo de almacenamiento sobrante ($/unidad·día)
+CEP      = 65_000.0    # Costo de emisión por pedido ($/pedido)
+CVP      = 93_600.0    # Costo de venta perdida ($/unidad)
+CALM     = 3_000.0       # Costo de almacenamiento regular ($/unidad·día)
+CSOB     = 30_000.0     # Costo de almacenamiento sobrante ($/unidad·día)
 
 # Costos de compra/venta del mueble (situación actual — nuevo diagrama)
 CUN      = 234_000.0   # Costo de compra por unidad al proveedor ($)
-CV       = 305_000.0   # Precio de venta al cliente por unidad ($)
-PRESUP_0 = 1_000_000.0 # Presupuesto inicial dedicado al mueble Camilo ($)
+CV       = 327_600.0   # Precio de venta al cliente por unidad ($)
+PRESUP_0 = 800_000.0 # Presupuesto inicial dedicado al mueble Camilo ($)
 
 # Parámetros de Simulación
 TF      = 70       # Tiempo final de simulación (días corridos)
