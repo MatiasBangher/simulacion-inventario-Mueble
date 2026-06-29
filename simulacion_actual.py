@@ -10,8 +10,8 @@ def simular_actual(
     CALM:     float = 0,
     CSOB:     float = 0,
     CUN:      float = 234_000,    # Costo de compra por unidad ($)
-    CV:       float = 305_000,    # Precio de venta por unidad ($)
-    PRESUP_0: float = 1_000_000,  # Presupuesto inicial ($)
+    CV:       float = 327_600,    # Precio de venta por unidad ($)
+    PRESUP_0: float = 800_000,    # Presupuesto inicial ($)
     TF:       int   = 70,
     MAX_CAP:  int   = 10,
     ST_0:     int   = 7,
@@ -21,14 +21,15 @@ def simular_actual(
     """
     Simula la política ACTUAL de gestión de inventario del Mueble Camilo.
 
-    Nuevo diagrama de flujo (actualizado):
+    Diagrama de flujo (versión actualizada 2026-06-29):
       · Días de CORRIDO: sábado (T%7=5) y domingo (T%7=6) no son hábiles → VD=0, sin actividad.
       · Pedido SOLO los lunes (T mod 7 == 0), siempre, sin importar pedidos pendientes.
-      · TP = floor(MAX_CAP − ST)  ← determinístico, llena hasta capacidad máxima.
-             (fórmula del diagrama: REDOND(IDE MOD CUN) = IDE dado que IDE < CUN siempre)
+      · TP = floor(PRESUP / CUN)  → cuántas unidades se pueden comprar con el presupuesto;
+             se reduce de a 1 mientras TP > (MAX_CAP − ST) para no exceder capacidad.
       · Sobrante detectado DESPUÉS de atender demanda: si ST > MAX_CAP → SOB = ST − MAX_CAP.
       · CTALM: si sobrante → cobra CALM sobre (ST−MAX_CAP); si no → cobra sobre ST.
-      · PRESUP: ledger que suma ingresos por ventas y resta costos de compra y almacenamiento.
+      · PRESUP: ledger que suma ingresos por ventas y resta costos (compra, CEP, almacenamiento).
+      · Al emitir pedido: PRESUP -= CEP además de PRESUP -= TP*CUN.
 
     Retorna dict con CTF, CTALM, CVTAP, CTEP, CALMSOB, VTAP, NROP, PRESUP, historial.
     """
@@ -168,8 +169,9 @@ def simular_actual(
                 if TP_nuevo > 0:
                     PRESUP   -= TP_nuevo * CUN  # egreso por compra
                     NROP     += 1
+                    CTEP     += CEP             # costo de emisión acumulado
+                    PRESUP   -= CEP             # descuento del CEP al presupuesto
                     TP_lst[NROP] = TP_nuevo
-                    CTEP     += CEP
                     DE        = gen_demora.siguiente()
                     FLL[NROP] = T + DE
                     pedido_info = {"nrop": NROP, "tp": TP_nuevo, "de": DE, "fll": T + DE}
