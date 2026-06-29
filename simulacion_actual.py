@@ -132,9 +132,9 @@ def simular_actual(
             # Verificar sobrante LUEGO de atender demanda
             if ST > MAX_CAP:
                 SOB     = ST - MAX_CAP
-                # CTALM cobra sobre el excedente (unidades sobrantes) a tasa CALM
-                CTALM  += (ST - MAX_CAP) * CALM
-                PRESUP -= (ST - MAX_CAP) * CALM
+                # CTALM cobra sobre las MAX_CAP unidades que caben en el depósito
+                CTALM  += MAX_CAP * CALM
+                PRESUP -= MAX_CAP * CALM
             else:
                 SOB     = 0
                 CTALM  += ST * CALM         # cobra sobre stock restante
