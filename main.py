@@ -2,7 +2,6 @@ from Pruebas import DistUniformeSim
 import math
 from datos import cargar_parametros, imprimir_parametros
 from simulacion_actual import simular_actual
-from simulacion_ideal import simular_ideal
 from Pruebas.GenNumsAleatorios import GeneradorCongruencial
 from Pruebas.DistUniformeSim import PruebasEstadisticas
 from graficas import generar_graficas_actual
@@ -204,93 +203,4 @@ if __name__ == "__main__":
         nombre_archivo   = "graficas_situacion_actual.png",
     )
 
-    # 6. Ejecutar simulación MODELO IDEAL con N replicaciones variando SR
-    # print("\n" + "="*80)
-    # print(f" ▶️  EJECUTANDO MODELO IDEAL: {N_REPLICACIONES} RÉPLICAS (Búsqueda de SR óptimo)")
-    # print("="*80)
-    # 
-    # comparativa = []
-    # optimo_sr = 0
-    # min_ctf = float('inf')
-    # optimo_metrics = {}
-    # 
-    # print(f"\nVariando Punto de Reorden (SR) de 0 a {MAX_CAP - 1}:")
-    # print("─"*78)
-    # print(f"{'SR':>3} | {'CTF (Total Prom)':>17} | {'CTALM':>10} | {'CVTAP':>10} | {'CTEP':>10} | {'VTAP':>6} | {'NROP':>5}")
-    # print("─"*78)
-    # 
-    # for sr in range(MAX_CAP):
-    #     # Para que la comparación sea estadísticamente justa, usamos la misma semilla inicial en cada SR
-    #     # aplicando la técnica de Números Aleatorios Comunes (Common Random Numbers)
-    #     gen_ideal = GeneradorCongruencial(pc["X0"], pc["a"], pc["c"], pc["m"])
-    #     
-    #     costos_ideal = []
-    #     alm_ideal = []
-    #     vtap_cost_ideal = []
-    #     emision_ideal = []
-    #     vtap_unids_ideal = []
-    #     nrop_ideal = []
-    #     
-    #     for _ in range(N_REPLICACIONES):
-    #         res_ideal = simular_ideal(
-    #             params=params,
-    #             CEP=CEP,
-    #             CVP=CVP,
-    #             CALM=CALM,
-    #             TF=TF,
-    #             SR=sr,
-    #             MAX_CAP=MAX_CAP,
-    #             ST_0=ST_0,
-    #             verbose=False,
-    #             gen_compartido=gen_ideal
-    #         )
-    #         costos_ideal.append(res_ideal["CTF"])
-    #         alm_ideal.append(res_ideal["CTALM"])
-    #         vtap_cost_ideal.append(res_ideal["CVTAP"])
-    #         emision_ideal.append(res_ideal["CTEP"])
-    #         vtap_unids_ideal.append(res_ideal["VTAP"])
-    #         nrop_ideal.append(res_ideal["NROP"])
-    #         
-    #     avg_cost_ideal = sum(costos_ideal) / N_REPLICACIONES
-    #     avg_alm_ideal = sum(alm_ideal) / N_REPLICACIONES
-    #     avg_vtap_cost_ideal = sum(vtap_cost_ideal) / N_REPLICACIONES
-    #     avg_emision_ideal = sum(emision_ideal) / N_REPLICACIONES
-    #     avg_vtap_unids_ideal = sum(vtap_unids_ideal) / N_REPLICACIONES
-    #     avg_nrop_ideal = sum(nrop_ideal) / N_REPLICACIONES
-    #     
-    #     print(f"{sr:>3} | ${avg_cost_ideal:>16.2f} | ${avg_alm_ideal:>9.2f} | ${avg_vtap_cost_ideal:>9.2f} | ${avg_emision_ideal:>9.2f} | {avg_vtap_unids_ideal:>6.1f} | {avg_nrop_ideal:>5.1f}")
-    #     
-    #     metrics = {
-    #         "SR": sr,
-    #         "CTF": avg_cost_ideal,
-    #         "CTALM": avg_alm_ideal,
-    #         "CVTAP": avg_vtap_cost_ideal,
-    #         "CTEP": avg_emision_ideal,
-    #         "VTAP": avg_vtap_unids_ideal,
-    #         "NROP": avg_nrop_ideal
-    #     }
-    #     comparativa.append(metrics)
-    #     
-    #     if avg_cost_ideal < min_ctf:
-    #         min_ctf = avg_cost_ideal
-    #         optimo_sr = sr
-    #         optimo_metrics = metrics
-    # 
-    # print("─"*78)
-    # print(f"🎯 El Stock de Referencia (SR) óptimo promedio es: {optimo_sr} con un costo medio de ${min_ctf:.2f}")
-    # 
-    # # 6. Comparación final entre Actual e Ideal Óptimo
-    # print("\n" + "="*80)
-    # print(" 📊 COMPARATIVA FINAL PROMEDIO: SITUACIÓN ACTUAL vs. MODELO IDEAL ÓPTIMO")
-    # print("="*80)
-    # print(f"{'Métrica (Valores Medios)':<30} | {'Situación Actual':>18} | {'Modelo Ideal (SR=' + str(optimo_sr) + ')':>22}")
-    # print("─"*78)
-    # print(f"{'Costo Almacenamiento Regular':<30} | ${avg_alm_actual:>17.2f} | ${optimo_metrics['CTALM']:>21.2f}")
-    # print(f"{'Costo Almacenamiento Sobrante':<30} | ${avg_sob_actual:>17.2f} | {'N/A':>22}")
-    # print(f"{'Costo Ventas Perdidas':<30} | ${avg_vtap_cost_actual:>17.2f} | ${optimo_metrics['CVTAP']:>21.2f}")
-    # print(f"{'Costo Emisión Pedidos':<30} | ${avg_emision_actual:>17.2f} | ${optimo_metrics['CTEP']:>21.2f}")
-    # print(f"{'COSTO TOTAL DE FUNCIONAMIENTO':<30} | ${avg_cost_actual:>17.2f} | ${optimo_metrics['CTF']:>21.2f}")
-    # print("─"*78)
-    # print(f"{'Unidades Perdidas (VTAP)':<30} | {avg_vtap_unids_actual:>17.2f} | {optimo_metrics['VTAP']:>21.2f}")
-    # print(f"{'Pedidos Realizados (NROP)':<30} | {avg_nrop_actual:>17.2f} | {optimo_metrics['NROP']:>21.2f}")
-    # print("="*80 + "\n")
+   

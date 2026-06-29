@@ -22,7 +22,7 @@ def simular_actual(
     Simula la política ACTUAL de gestión de inventario del Mueble Camilo.
 
     Diagrama de flujo (versión actualizada 2026-06-29):
-      · Días de CORRIDO: sábado (T%7=5) y domingo (T%7=6) no son hábiles → VD=0, sin actividad.
+      · Días de CORRIDO: sábado (T%7=5) y domingo (T%7=6) no son hábiles → DD=0, sin actividad.
       · Pedido SOLO los lunes (T mod 7 == 0), siempre, sin importar pedidos pendientes.
       · TP = floor(PRESUP / CUN)  → cuántas unidades se pueden comprar con el presupuesto;
              se reduce de a 1 mientras TP > (MAX_CAP − ST) para no exceder capacidad.
@@ -77,7 +77,7 @@ def simular_actual(
               f"  |  Demora: Unif({pu['DE_MIN']},{pu['DE_MAX']}) días corridos")
         print(SEP)
         print(
-            f"{'T':>4} | {'Día':>5} | {'VD':>3} | {'ST_ini':>6} | {'ST_fin':>6} | "
+            f"{'T':>4} | {'Día':>5} | {'DD':>3} | {'ST_ini':>6} | {'ST_fin':>6} | "
             f"{'SOB':>4} | {'VTAP_d':>6} | {'Evento':<42} | "
             f"{'CTALM':>9} | {'CVTAP':>9} | {'CTEP':>7} | {'CALMSOB':>9} | {'PRESUP':>13}"
         )
@@ -95,7 +95,7 @@ def simular_actual(
         # ── Fin de semana: sin actividad comercial ────────────────────────────
         if not DIA_HABIL:
             historial.append({
-                "T": T, "dia": dia_nombre, "VD": 0, "ST_ini": ST, "ST": ST,
+                "T": T, "dia": dia_nombre, "DD": 0, "ST_ini": ST, "ST": ST,
                 "SOB": 0, "VTAP_dia": 0, "NROP": NROP,
                 "CTALM": CTALM, "CVTAP": CVTAP, "CTEP": CTEP, "CALMSOB": CALMSOB,
                 "PRESUP": PRESUP, "pedido": None, "llegadas": [],
@@ -117,17 +117,17 @@ def simular_actual(
         llegadas = [k for k, d in FLL.items() if T == d]
         for k in llegadas:
             cant_recibida = TP_lst.pop(k)
-            ST += cant_recibida   # puede exceder MAX_CAP; el sobrante se calcula DESPUÉS de VD
+            ST += cant_recibida   # puede exceder MAX_CAP; el sobrante se calcula DESPUÉS de DD
             FLL.pop(k)
 
         # [2] Demanda del día (método de rechazo → Poisson)
-        VD = gen_demanda.siguiente()
+        DD = gen_demanda.siguiente()
 
         # [3] Atender demanda, calcular PRESUP e identificar sobrante post-demanda
         vtap_dia = 0
-        if ST >= VD:
-            ST     -= VD
-            PRESUP += VD * CV               # ingreso por venta completa
+        if ST >= DD:
+            ST     -= DD
+            PRESUP += DD * CV               # ingreso por venta completa
 
             # Verificar sobrante LUEGO de atender demanda
             if ST > MAX_CAP:
@@ -141,7 +141,7 @@ def simular_actual(
                 PRESUP -= ST * CALM
         else:
             # Stock insuficiente: venta parcial + ventas perdidas
-            vtap_dia = VD - ST
+            vtap_dia = DD - ST
             VTAP    += vtap_dia
             PRESUP  += ST * CV              # ingreso solo por lo que pudo vender
             CVTAP   += vtap_dia * CVP
@@ -178,7 +178,7 @@ def simular_actual(
 
         # Registro
         historial.append({
-            "T": T, "dia": dia_nombre, "VD": VD, "ST_ini": ST_ini, "ST": ST,
+            "T": T, "dia": dia_nombre, "DD": DD, "ST_ini": ST_ini, "ST": ST,
             "SOB": SOB, "VTAP_dia": vtap_dia, "NROP": NROP,
             "CTALM": CTALM, "CVTAP": CVTAP, "CTEP": CTEP, "CALMSOB": CALMSOB,
             "PRESUP": PRESUP, "pedido": pedido_info, "llegadas": llegadas,
@@ -192,7 +192,7 @@ def simular_actual(
                 p    = pedido_info
                 evt += f"→ Ped.#{p['nrop']:02d}: {p['tp']}u DE={p['de']}d arr.T={p['fll']}"
             print(
-                f"{T:>4} | {dia_nombre:>5} | {VD:>3} | {ST_ini:>6} | {ST:>6} | "
+                f"{T:>4} | {dia_nombre:>5} | {DD:>3} | {ST_ini:>6} | {ST:>6} | "
                 f"{SOB:>4} | {vtap_dia:>6} | {evt:<42} | "
                 f"{CTALM:>9.2f} | {CVTAP:>9.2f} | {CTEP:>7.2f} | {CALMSOB:>9.2f} | {PRESUP:>13,.0f}"
             )
