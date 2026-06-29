@@ -291,20 +291,12 @@ def generar_graficas_actual(
 
     _, _, ci_lo, ci_hi = _intervalo_confianza(costos_actual, alfa)
 
-    # ── Figura 1: Torta + Convergencia CTF (layout 1×2) ──────────────────────
+    # ── Figura 1: Torta (layout 1×1) ───────────────────────────────────────────
     plt.style.use("dark_background")
-    fig = plt.figure(figsize=(16, 7), facecolor=BG_GLOBAL)
-    gs  = gridspec.GridSpec(1, 2, figure=fig, wspace=0.38)
-
-    ax_torta = fig.add_subplot(gs[0, 0])
-    ax_conv  = fig.add_subplot(gs[0, 1])
+    fig = plt.figure(figsize=(12, 10), facecolor=BG_GLOBAL)
+    ax_torta = fig.add_subplot(1, 1, 1)
 
     _plot_torta(ax_torta, avg_vtap, avg_ctep, avg_alm, avg_sob)
-    _plot_convergencia(
-        ax_conv, costos_actual, alfa,
-        titulo="Convergencia de la Media del CTF",
-        color_linea=C_CONV,
-    )
 
     # ── Título global ─────────────────────────────────────────────────────────
     fig.suptitle(

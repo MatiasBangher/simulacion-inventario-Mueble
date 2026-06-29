@@ -70,8 +70,10 @@ if __name__ == "__main__":
     vtap_unids_actual = []
     nrop_actual       = []
     presup_actual     = []
+    rng_counts        = []   # números pseudoaleatorios por réplica
     
     for _ in range(N_REPLICACIONES):
+        _cnt_antes = gen_actual.count
         res = simular_actual(
             params=params,
             CEP=CEP,
@@ -87,6 +89,7 @@ if __name__ == "__main__":
             verbose=False,
             gen_compartido=gen_actual
         )
+        rng_counts.append(gen_actual.count - _cnt_antes)
         costos_actual.append(res["CTF"])
         alm_actual.append(res["CTALM"])
         sob_actual.append(res["CALMSOB"])
@@ -104,26 +107,48 @@ if __name__ == "__main__":
     avg_vtap_unids_actual = sum(vtap_unids_actual)   / N_REPLICACIONES
     avg_nrop_actual       = sum(nrop_actual)         / N_REPLICACIONES
     avg_presup_actual     = sum(presup_actual)       / N_REPLICACIONES
+    avg_rng_actual        = sum(rng_counts)          / N_REPLICACIONES
 
-    # Imprimir cuadro de Resultados Financieros y Operativos
-    print("\n┌────────────────────────────────────────────────────────────────────────┐")
-    print(f"│   📊  RESULTADOS PROMEDIO DE LA SITUACIÓN ACTUAL ({N_REPLICACIONES} RÉPLICAS)      │")
-    print("├────────────────────────────────────────────────────────────────────────┤")
-    print("│  Operación del Inventario:                                             │")
-    print(f"│    • Almacenamiento Regular (CTALM)       : $ {avg_alm_actual:>24.2f}  │")
-    print(f"│    • Almacenamiento Excesivo/Sobrante     : $ {avg_sob_actual:>24.2f}  │")
-    print(f"│    • Emisión de Pedidos (CTEP)            : $ {avg_emision_actual:>24.2f}  │")
-    print("│                                                                        │")
-    print("│  Quiebres de Stock:                                                    │")
-    print(f"│    • Costo de Ventas Perdidas (CVTAP)     : $ {avg_vtap_cost_actual:>24.2f}  │")
-    print("├────────────────────────────────────────────────────────────────────────┤")
-    print(f"│  💰 COSTO TOTAL DE FUNCIONAMIENTO (CTF)   : $ {avg_cost_actual:>24.2f}  │")
-    print("├────────────────────────────────────────────────────────────────────────┤")
-    print("│  Indicadores Físicos y de Caja:                                        │")
-    print(f"│    • Presupuesto Final Promedio (Caja)    : $ {avg_presup_actual:>24,.2f}  │")
-    print(f"│    • Unidades de demanda insastisfecha Promedio (VTAP):   {round(avg_vtap_unids_actual):>6.0f} muebles. │")
-    print(f"│    • Pedidos Realizados Promedio (NROP)   :   {round(avg_nrop_actual):>21.0f} ped.  │")
-    print("└────────────────────────────────────────────────────────────────────────┘")
+    # ── Resultados Financieros y Operativos ──────────────────────────────────
+    _L = 46   # ancho columna etiqueta
+    _V = 22   # ancho columna valor
+    _W = _L + _V + 6   # ancho interior total
+
+    def _fila(label, valor_str):
+        return f"║  {label:<{_L}}{valor_str:>{_V}}  ║"
+
+    def _sep(char="─"):
+        return f"║  {char * (_W - 2)}  ║"
+
+    print()
+    print(f"╔{'═' * _W}╗")
+    encabezado = f"📊  RESULTADOS — SITUACIÓN ACTUAL   ({N_REPLICACIONES} réplicas · TF={TF} días)"
+    print(f"║  {encabezado:<{_W - 2}}║")
+    print(f"╠{'═' * _W}╣")
+
+    # Costos
+    print(f"║  {'── COSTOS DE INVENTARIO':<{_W - 2}}║")
+    print(_sep())
+    print(_fila("Concepto", "Promedio ($)"))
+    print(_sep())
+    print(_fila("Almacenamiento Regular       (CTALM)",  f"$ {avg_alm_actual:>15,.2f}"))
+    print(_fila("Almacenamiento Sobrante      (CALMSOB)", f"$ {avg_sob_actual:>15,.2f}"))
+    print(_fila("Emisión de Pedidos           (CTEP)",   f"$ {avg_emision_actual:>15,.2f}"))
+    print(_fila("Ventas Perdidas              (CVTAP)",  f"$ {avg_vtap_cost_actual:>15,.2f}"))
+    print(_sep("─"))
+    print(_fila("💰 COSTO TOTAL DE FUNCIONAMIENTO (CTF)", f"$ {avg_cost_actual:>15,.2f}"))
+
+    # Operativos
+    print(f"╠{'═' * _W}╣")
+    print(f"║  {'── INDICADORES OPERATIVOS':<{_W - 2}}║")
+    print(_sep())
+    print(_fila("Concepto", "Valor"))
+    print(_sep())
+    print(_fila("Presupuesto Final Promedio   (Caja)",  f"$ {avg_presup_actual:>15,.2f}"))
+    print(_fila("Demanda Insatisfecha Prom.   (VTAP)",  f"{avg_vtap_unids_actual:>14.1f} u"))
+    print(_fila("Pedidos Realizados Prom.     (NROP)",  f"{avg_nrop_actual:>12.1f} ped."))
+    print(_fila("Números Pseudoaleatorios     (RNG)",   f"{avg_rng_actual:>12.1f} /rep."))
+    print(f"╚{'═' * _W}╝")
 
     # 4. Pruebas estadísticas sobre los r generados (muestra representativa de N=220)
     N_TEST = min(220, len(gen_actual.secuencia))

@@ -100,26 +100,10 @@ def cargar_parametros(
 
 def imprimir_parametros(params: dict):
     pc = params["params_cong"]
-    pr = params["params_rechazo"]
-    pu = params["params_uniforme"]
-    df_d = params["df_diario"]
-    df_p = params["df_pedidos"]
 
     print(f"\n{'=' * 70}")
     print("  📁  PARÁMETROS LEÍDOS DESDE LOS CSVs")
     print(f"{'=' * 70}")
     print(f"\n  Generador Congruencial Mixto:")
     print(f"    Xₙ₊₁ = ({pc['a']}·Xₙ + {pc['c']}) mod {pc['m']}   X₀ = {pc['X0']}")
-    print(f"\n  Método de Rechazo (demanda Poisson):")
-    print(f"    λ={pr['lam']}  a={pr['a_rej']}  b={pr['b_rej']}  M={pr['m_rej']}")
-    print(f"\n  Transformada Inversa (demora proveedor):")
-    print(f"    DE ~ Uniforme({pu['DE_MIN']}, {pu['DE_MAX']}) días corridos")
-    print(f"\n  Histórico observado:")
-    print(f"    Días: {len(df_d)}   Pedidos: {len(df_p)}"
-          f"   Unid. perdidas: {int(df_d['dem_insatisfecha'].sum())}")
-    print(f"\n  Pedidos reales al proveedor:")
-    print(f"    {'N°':>3} | {'Pedido':>8} | {'Llegada':>9} | {'DE (corr.)':>10}")
-    for _, row in df_p.iterrows():
-        print(f"    {int(row['nro_pedido']):>3} | {str(row['dia_pedido']):>8} | "
-              f"{str(row['dia_llegada']):>9} | {row['demora_hab']:>10.0f}")
     print(f"{'=' * 70}")
