@@ -22,7 +22,8 @@ def simular_actual(
     Simula la política ACTUAL de gestión de inventario del Mueble Camilo.
 
     Diagrama de flujo (versión actualizada 2026-06-29):
-      · Días de CORRIDO: sábado (T%7=5) y domingo (T%7=6) no son hábiles → DD=0, sin actividad.
+      · Días de CORRIDO: domingo (T%7=6) no es hábil → DD=0, sin actividad.
+      · Sábado (T%7=5) SÍ es hábil: se atiende demanda y se cobra almacenamiento.
       · Pedido SOLO los lunes (T mod 7 == 0), siempre, sin importar pedidos pendientes.
       · TP = floor(PRESUP / CUN)  → cuántas unidades se pueden comprar con el presupuesto;
              se reduce de a 1 mientras TP > (MAX_CAP − ST) para no exceder capacidad.
@@ -68,7 +69,7 @@ def simular_actual(
     SEP = "─" * 140
     if verbose:
         print(f"\n{'=' * 140}")
-        print("  SIMULACIÓN — SITUACIÓN ACTUAL  |  Mueble Camilo  |  S&M")
+        print("  SIMULACIÓN — SITUACIÓN ACTUAL  |  Mueble Camilo  |  S&M  (Lun–Sáb hábil)")
         print(f"{'=' * 140}")
         print(f"  TF={TF} días corridos | ST₀={ST_0} | MAX_CAP={MAX_CAP}")
         print(f"  CEP=${CEP} | CVP=${CVP} | CALM=${CALM} | CSOB=${CSOB}")
@@ -90,9 +91,9 @@ def simular_actual(
         # Determinar día de la semana (0=Lun … 4=Vie → hábil | 5=Sáb, 6=Dom → no hábil)
         dia_semana  = T % 7
         dia_nombre  = DIAS[dia_semana]
-        DIA_HABIL   = dia_semana <= 4   # Lunes a Viernes
+        DIA_HABIL   = dia_semana <= 5   # Lunes a Sábado (6=Dom → no hábil)
 
-        # ── Fin de semana: sin actividad comercial ────────────────────────────
+        # ── Domingo: sin actividad comercial ────────────────────────────────────
         if not DIA_HABIL:
             historial.append({
                 "T": T, "dia": dia_nombre, "DD": 0, "ST_ini": ST, "ST": ST,
